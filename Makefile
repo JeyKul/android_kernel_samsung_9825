@@ -534,12 +534,12 @@ ifeq ($(cc-name),clang)
 ifneq ($(CROSS_COMPILE),)
 #CLANG_TRIPLE	?= $(CROSS_COMPILE)
 CLANG_TRIPLE    ?=$(srctree)/toolchains/clang-r416183b1/bin/aarch64-linux-gnu-
-CLANG_FLAGS	:= --target=$(notdir $(CLANG_TRIPLE:%-=%))
-GCC_TOOLCHAIN_DIR := $(dir $(shell which $(CROSS_COMPILE)elfedit))
-CLANG_FLAGS	+= --prefix=$(GCC_TOOLCHAIN_DIR)
+CLANG_FLAGS	+= --target=$(notdir $(CROSS_COMPILE:%-=%))
 endif
 ifneq ($(LLVM_IAS),1)
 CLANG_FLAGS	+= -no-integrated-as
+GCC_TOOLCHAIN_DIR := $(dir $(shell which $(CROSS_COMPILE)elfedit))
+CLANG_FLAGS	+= --prefix=$(GCC_TOOLCHAIN_DIR)$(notdir $(CROSS_COMPILE))
 endif
 KBUILD_CFLAGS	+= $(CLANG_FLAGS)
 KBUILD_AFLAGS	+= $(CLANG_FLAGS)
