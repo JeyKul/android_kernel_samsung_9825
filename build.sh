@@ -3,6 +3,7 @@
 # Default values
 BUILD_JOB_NUMBER=$(grep -c ^processor /proc/cpuinfo)
 USE_PISS=0
+USE_LLVM=1
 
 # Parse command line options
 while getopts ":j:N" opt; do
@@ -25,12 +26,14 @@ shift $((OPTIND -1))
 
 export MODEL=$1
 export piss=$2
-export BUILD_CROSS_COMPILE=$(pwd)/toolchains/aarch64-linux-android-4.9/bin/aarch64-linux-androidkernel-
+#export BUILD_CROSS_COMPILE=$(pwd)/toolchains/aarch64-linux-android-4.9/bin/aarch64-linux-androidkernel-
+export BUILD_CROSS_COMPILE=/usr/bin/aarch64-linux-gnu-
+export PATH="/home/jey/linux-x86/clang-r416183b1/bin:${PATH}"
 RDIR=$(pwd)
 
 export MODEL=$1
 export piss=$2
-export BUILD_CROSS_COMPILE=$(pwd)/toolchains/aarch64-linux-android-4.9/bin/aarch64-linux-androidkernel-
+#export BUILD_CROSS_COMPILE=$(pwd)/toolchains/aarch64-linux-android-4.9/bin/aarch64-linux-androidkernel-
 export BUILD_JOB_NUMBER=`grep -c ^processor /proc/cpuinfo`
 RDIR=$(pwd)
 
@@ -96,11 +99,11 @@ FUNC_BUILD_KERNEL()
         sleep 5
     fi
 
-    make -j$BUILD_JOB_NUMBER ARCH=arm64 \
+    make -j$BUILD_JOB_NUMBER ARCH=arm64 LLVM=$USE_LLVM \
         CROSS_COMPILE=$BUILD_CROSS_COMPILE \
         $KERNEL_DEFCONFIG || exit -1
 
-    make -j$BUILD_JOB_NUMBER ARCH=arm64 \
+    make -j$BUILD_JOB_NUMBER ARCH=arm64 LLVM=$USE_LLVM \
         CROSS_COMPILE=$BUILD_CROSS_COMPILE || exit -1
 
     $RDIR/toolchains/mkdtimg cfg_create build/dtb_$SOC.img \
@@ -120,7 +123,7 @@ FUNC_BUILD_DTBO()
 FUNC_BUILD_RAMDISK()
 {
     rm -f $RDIR/ramdisk/split_img/boot.img-kernel
-    cp $RDIR/arch/arm64/boot/Image $RDIR/ramdisk/split_img/boot.img-kernel
+    cp out/arch/arm64/boot/Image $RDIR/ramdisk/split_img/boot.img-kernel
     echo $BOARD > ramdisk/split_img/boot.img-board
     # This is kinda ugly hack, we could as well touch .placeholder to all of those
     mkdir -p $RDIR/ramdisk/ramdisk/debug_ramdisk
